@@ -178,19 +178,16 @@ def update(name):
 @click.argument('name', required=False)
 def new(name):
     p = {
-        'name': name if name else 'name',
+        'name': name or 'name',
         'image': f'{name}/{name}' if name else 'vendor/image',
         'command': 'gowitness report serve',
         'detach': True,
         'tty': False,
         'dockerfile': None,
-        'volumes': {
-            '.': {'bind': '/data'}
-        },
-        'ports': [
-            {7171: 7171}
-        ]
+        'volumes': {'.': {'bind': '/data'}},
+        'ports': [{7171: 7171}],
     }
+
 
     out = f'[dim]# example plan\n' \
           f'#\n' \

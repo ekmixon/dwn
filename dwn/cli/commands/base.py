@@ -63,7 +63,10 @@ def run(name, extra_args):
     console.info(f'found plan for [cyan]{name}[/]')
     if (c := len(plan.container.containers())) > 0:
         console.error(f'plan [bold]{name}[/] already has [b]{c}[/] containers running')
-        console.info(f'use [bold]dwn show[/] to see running plans. [bold]dwn stop <plan>[/] to stop')
+        console.info(
+            'use [bold]dwn show[/] to see running plans. [bold]dwn stop <plan>[/] to stop'
+        )
+
         return
 
     plan.add_commands(extra_args) if extra_args else None
@@ -83,7 +86,7 @@ def run(name, extra_args):
     if plan.tty:
         console.info('container booted! attach & detach commands are:')
         console.info(f'attach: [bold]docker attach [cyan]{plan.container.get_container_name()}[/][/]')
-        console.info(f'detach: [bold]ctrl + [red]p[/], ctrl + [red]q[/][/]')
+        console.info('detach: [bold]ctrl + [red]p[/], ctrl + [red]q[/][/]')
         return
 
     console.info('streaming container logs')
@@ -116,7 +119,7 @@ def show():
     table.add_column('volume(s)')
 
     for plan in loader.valid_plans():
-        if not len(plan.container.containers()) > 0:
+        if len(plan.container.containers()) <= 0:
             continue
 
         table.add_row(f'[bold]{plan.name}[/]',
@@ -136,10 +139,11 @@ def stop(name, yes):
         Stop a plan
     """
 
-    if not yes:
-        if not click.confirm(f'are you sure you want to stop containers for plan {name}?'):
-            console.info('not stopping any plans')
-            return
+    if not yes and not click.confirm(
+        f'are you sure you want to stop containers for plan {name}?'
+    ):
+        console.info('not stopping any plans')
+        return
 
     loader = Loader()
     if not (plan := loader.get_plan(name)):

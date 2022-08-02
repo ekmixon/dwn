@@ -188,7 +188,7 @@ class Plan:
         """
 
         console.debug(f'adding commands {c} to plan {self.name}')
-        self.command = self.command + ' ' + ' '.join(c)
+        self.command = f'{self.command} ' + ' '.join(c)
 
     def image_version(self) -> str:
         """
@@ -214,9 +214,9 @@ class Plan:
             'volumes': self.volumes,
             'ports': self.ports,
             'tty': self.tty,
-            'stdin_open': self.tty if self.tty else False,
+            'stdin_open': self.tty or False,
             'environment': self.environment,
-            'detach': True  # it's up to the caller to re-attach after launch for logs
+            'detach': True,
         }
 
     def __repr__(self):
@@ -325,16 +325,12 @@ class Container(object):
             Returns containers relevant to this plan.
         """
 
-        c = []
-
-        for container in self.get_client().containers.list():
-            if not container.name == self.get_container_name():
-                if not container.name.startswith(self.get_net_container_name()):
-                    continue
-
-            c.append(container)
-
-        return c
+        return [
+            container
+            for container in self.get_client().containers.list()
+            if container.name == self.get_container_name()
+            or container.name.startswith(self.get_net_container_name())
+        ]
 
     def ports(self) -> list:
         """
@@ -351,7 +347,7 @@ class Container(object):
             candidate = container.name.split('_')
             port_map = candidate[-2:]
 
-            if not len(port_map) == 2:
+            if len(port_map) != 2:
                 continue
 
             outside, inside = port_map[0], port_map[1]
